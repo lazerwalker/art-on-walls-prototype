@@ -6,10 +6,13 @@
 //  Copyright © 2017 Orta Therox. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+@import UIKit;
+
 #import <SceneKit/SceneKit.h>
 #import <ARKit/ARKit.h>
 
 @interface ViewController : UIViewController
+
+- (instancetype)initWithImage:(UIImage *)image;
 
 @end

@@ -6,6 +6,8 @@
 //  Copyright © 2017 Orta Therox. All rights reserved.
 //
 
+#import "ViewController.h"
+
 #import "AppDelegate.h"
 
 @interface AppDelegate ()
@@ -17,6 +19,13 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+
+    UIImage *image = [UIImage imageNamed:@"large.jpg"];
+
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window.rootViewController = [[ViewController alloc] initWithImage:image];
+    [self.window makeKeyAndVisible];
+
     return YES;
 }
 

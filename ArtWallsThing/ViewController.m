@@ -6,26 +6,45 @@
 //  Copyright © 2017 Orta Therox. All rights reserved.
 //
 
+
 #import "ViewController.h"
 
 #import "AnimatingUIImageView.h"
 
 @interface ViewController () <ARSCNViewDelegate>
+NS_ASSUME_NONNULL_BEGIN
 
-@property (nonatomic, strong) IBOutlet ARSCNView *sceneView;
-@property (nonatomic, weak) IBOutlet UILabel *infoLabel;
-@property (nonatomic, weak) AnimatingUIImageView *imageView;
-@property (nonatomic, weak) IBOutlet UILabel *userMessagesLabel;
+@property (nonatomic, strong, readonly) ARSCNView *sceneView;
+@property (nonatomic, strong) AnimatingUIImageView *imageView;
+@property (nonatomic, strong, nullable) UILabel *userMessagesLabel;
 
 @property (nonatomic) BOOL isReady;
+
+@property (nonatomic, readonly) UIImage *image;
 
 @end
 
     
 @implementation ViewController
 
+- (instancetype)initWithImage:(UIImage *)image {
+    self = [super init];
+    if (!self) return nil;
+
+    _image = image;
+    _sceneView = [[ARSCNView alloc] init];
+
+    // TODO: Autolayout
+
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    // TODO: Properly set this up with autolayout
+    self.sceneView.frame = self.view.frame;
+    [self.view addSubview:self.sceneView];
 
     // Set the view's delegate
     self.sceneView.delegate = self;
@@ -77,15 +96,15 @@
     NSInteger imageRealWidth = 48;
     NSInteger imageRealHeight = 48;
 
-    UIImage *image = [UIImage imageNamed:@"large.jpg"];
+    // set image
 
-    CGFloat scaleFactor = image.size.width / 0.2;
-    CGFloat width = image.size.width / scaleFactor;
-    CGFloat height = image.size.height / scaleFactor;
+    CGFloat scaleFactor = self.image.size.width / 0.2;
+    CGFloat width = self.image.size.width / scaleFactor;
+    CGFloat height = self.image.size.height / scaleFactor;
 
     SCNPlane *geometry = [SCNPlane planeWithWidth:width height:height];
     SCNMaterial *material = [[SCNMaterial alloc] init];
-    material.diffuse.contents = image;
+    material.diffuse.contents = self.image;
     geometry.materials = @[material];
 
     simd_float4x4 newLocationSimD = self.sceneView.session.currentFrame.camera.transform;
@@ -133,12 +152,10 @@
 
 - (void)session:(ARSession *)session cameraDidChangeTrackingState:(ARCamera *)camera
 {
-    NSString *state = @"";
     switch (camera.trackingState) {
         case ARTrackingStateNotAvailable:
         case ARTrackingStateLimited:
             [self.imageView start];
-            state = [self stringForTrackingReason:camera.trackingStateReason];
             self.userMessagesLabel.text = @"Please slowly move the camera around the room to start augmented reality";
 
             break;
@@ -148,7 +165,6 @@
             self.userMessagesLabel.text = @"Please put your phone at eye level against the wall where you want to see your work \n\nThen hold one finger on the screen for 2 seconds ";
     }
 
-    self.infoLabel.text = state;
     self.isReady = camera.trackingState == ARTrackingStateNormal;
 }
 
@@ -179,5 +195,7 @@
     // Reset tracking and/or remove existing anchors if consistent tracking is required
     
 }
-
+NS_ASSUME_NONNULL_END
 @end
+
+
