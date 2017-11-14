@@ -8,12 +8,7 @@
 
 #import "ViewController.h"
 
-
-@interface AnimatingUIImageView: UIImageView
-@property (nonatomic) NSTimer *timer;
-@property (nonatomic) NSInteger index;
-
-@end
+#import "AnimatingUIImageView.h"
 
 @interface ViewController () <ARSCNViewDelegate>
 
@@ -26,36 +21,6 @@
 
 @end
 
-@implementation AnimatingUIImageView
-
-- (void)start
-{
-    if (self.timer) { return; }
-    _index = 0;
-    _timer = [NSTimer scheduledTimerWithTimeInterval:1.0
-                                              target:self
-                                            selector:@selector(next)
-                                            userInfo:nil
-                                             repeats:YES];
-}
-
-- (void)next
-{
-    if(self.index == 3) { self.index = 0; }
-    self.index++;
-    NSString *imageName = [NSString stringWithFormat:@"move%@.png", @(self.index)];
-    [self setImage:[UIImage imageNamed:imageName]];
-}
-
-- (void)stop
-{
-    [self.timer invalidate];
-    self.timer = nil;
-}
-
-
-
-@end
     
 @implementation ViewController
 
