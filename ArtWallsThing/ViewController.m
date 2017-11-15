@@ -18,12 +18,16 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) ARSCNView *sceneView;
+@property (nonatomic, strong) SCNNode *artwork;
+@property (nonatomic, strong) SCNNode *plane;
+
 @property (nonatomic, strong) AnimatingUIImageView *imageView;
 @property (nonatomic, strong, nullable) UILabel *userMessagesLabel;
 
 @property (nonatomic) BOOL isReady;
 
-@property (nonatomic, readonly) ARAugmentedRealityConfig *config;
+@property (nonatomic, strong, readonly) ARAugmentedRealityConfig *config;
+
 
 @end
 
@@ -112,9 +116,21 @@ NS_ASSUME_NONNULL_BEGIN
     simd_float4x4 newLocationSimD = self.sceneView.session.currentFrame.camera.transform;
     SCNVector3 newLocation = SCNVector3Make(newLocationSimD.columns[3].x, newLocationSimD.columns[3].y, newLocationSimD.columns[3].z);
 
-    SCNNode *work = [SCNNode nodeWithGeometry:geometry];
-    work.position = newLocation;
-    [self.sceneView.scene.rootNode addChildNode:work];
+    self.artwork = [SCNNode nodeWithGeometry:geometry];
+    self.artwork.position = newLocation;
+    [self.sceneView.scene.rootNode addChildNode:self.artwork];
+
+    // To properly move the art in the real world, we project a vertical plane we can hitTest against later
+    // TODO: I wonder if we can generate this automatically later, rather than having a hidden object in our 3D scene
+
+    // There doesn't appear to be a way to flat-out create an infinite plane.
+    // 1000x1000 meters seems like a sensible upper bound that doesn't destroy performance
+    SCNPlane *infinitePlane = [SCNPlane planeWithWidth:1000 height:1000];
+    self.plane = [SCNNode nodeWithGeometry:infinitePlane];
+    self.plane.position = newLocation;
+    self.plane.hidden = true;
+
+    [self.sceneView.scene.rootNode addChildNode: self.plane];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -196,6 +212,32 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)sessionInterruptionEnded:(ARSession *)session {
     // Reset tracking and/or remove existing anchors if consistent tracking is required
     
+}
+
+#pragma mark - Touches
+
+/**
+ * The current implementation of moving art:
+ * When you touch the screen, we check if your point hits the invisible plane
+ * that we project out from the art's position (representing the wall, roughly).
+ * If yes, immediately move the artwork there.
+ * This is currently pretty slow, and is a janky experience.
+ */
+- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
+    if (touches.count != 1) { return; } // TODO
+    UITouch *touch = [touches anyObject];
+    CGPoint point = [touch locationInView:self.sceneView];
+
+    NSDictionary *options = @{
+      SCNHitTestIgnoreHiddenNodesKey: @NO,
+    };
+
+    NSArray <SCNHitTestResult *> *results = [self.sceneView hitTest:point options: options];
+    for (SCNHitTestResult *result in results) {
+        if ([result.node isEqual:self.plane]) {
+            self.artwork.position = result.worldCoordinates;
+        }
+    }
 }
 NS_ASSUME_NONNULL_END
 @end
