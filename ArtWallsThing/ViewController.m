@@ -6,10 +6,13 @@
 //  Copyright © 2017 Orta Therox. All rights reserved.
 //
 
+@import ARKit;
+@import SceneKit;
+
+#import "ARAugmentedRealityConfig.h"
+#import "AnimatingUIImageView.h"
 
 #import "ViewController.h"
-
-#import "AnimatingUIImageView.h"
 
 @interface ViewController () <ARSCNViewDelegate>
 NS_ASSUME_NONNULL_BEGIN
@@ -20,21 +23,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) BOOL isReady;
 
-@property (nonatomic, readonly) UIImage *image;
+@property (nonatomic, readonly) ARAugmentedRealityConfig *config;
 
 @end
 
     
 @implementation ViewController
 
-- (instancetype)initWithImage:(UIImage *)image {
+- (instancetype)initWithConfig:(ARAugmentedRealityConfig *)config  {
     self = [super init];
     if (!self) return nil;
 
-    _image = image;
+    _config = config;
     _sceneView = [[ARSCNView alloc] init];
-
-    // TODO: Autolayout
 
     return self;
 }
@@ -93,18 +94,19 @@ NS_ASSUME_NONNULL_BEGIN
 
     [gesture.view removeFromSuperview];
 
-    NSInteger imageRealWidth = 48;
-    NSInteger imageRealHeight = 48;
-
-    // set image
-
-    CGFloat scaleFactor = self.image.size.width / 0.2;
-    CGFloat width = self.image.size.width / scaleFactor;
-    CGFloat height = self.image.size.height / scaleFactor;
+    CGFloat width = [[[[NSMeasurement alloc] initWithDoubleValue:self.config.size.width
+                                                            unit:NSUnitLength.inches]
+                      measurementByConvertingToUnit:NSUnitLength.meters]
+                     doubleValue];
+    ;
+    CGFloat height = [[[[NSMeasurement alloc] initWithDoubleValue:self.config.size.height
+                                                             unit:NSUnitLength.inches]
+                       measurementByConvertingToUnit:NSUnitLength.meters]
+                      doubleValue];
 
     SCNPlane *geometry = [SCNPlane planeWithWidth:width height:height];
     SCNMaterial *material = [[SCNMaterial alloc] init];
-    material.diffuse.contents = self.image;
+    material.diffuse.contents = self.config.image;
     geometry.materials = @[material];
 
     simd_float4x4 newLocationSimD = self.sceneView.session.currentFrame.camera.transform;

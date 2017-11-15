@@ -7,12 +7,10 @@
 //
 
 @import UIKit;
-
-#import <SceneKit/SceneKit.h>
-#import <ARKit/ARKit.h>
+@class ARAugmentedRealityConfig;
 
 @interface ViewController : UIViewController
 
-- (instancetype)initWithImage:(UIImage *)image;
+- (instancetype)initWithConfig:(ARAugmentedRealityConfig *)config;
 
 @end

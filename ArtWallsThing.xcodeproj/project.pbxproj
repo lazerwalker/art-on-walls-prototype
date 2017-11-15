@@ -20,6 +20,7 @@
 		60BE43081FAE12C8004A503D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 60BE43071FAE12C8004A503D /* main.m */; };
 		60BE43101FAE1333004A503D /* ARKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60BE430F1FAE1327004A503D /* ARKit.framework */; };
 		60BE43121FAE133D004A503D /* SceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60BE43111FAE1338004A503D /* SceneKit.framework */; };
+		C667D9FD1FBBC2FC00012D70 /* ARAugmentedRealityConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = C667D9FC1FBBC2FC00012D70 /* ARAugmentedRealityConfig.m */; };
 		C6DBE8271FBB899900BDD6BA /* AnimatingUIImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = C6DBE8261FBB899900BDD6BA /* AnimatingUIImageView.m */; };
 /* End PBXBuildFile section */
 
@@ -41,6 +42,8 @@
 		60BE43071FAE12C8004A503D /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		60BE430F1FAE1327004A503D /* ARKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ARKit.framework; path = System/Library/Frameworks/ARKit.framework; sourceTree = SDKROOT; };
 		60BE43111FAE1338004A503D /* SceneKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SceneKit.framework; path = System/Library/Frameworks/SceneKit.framework; sourceTree = SDKROOT; };
+		C667D9FB1FBBC2FC00012D70 /* ARAugmentedRealityConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARAugmentedRealityConfig.h; sourceTree = "<group>"; };
+		C667D9FC1FBBC2FC00012D70 /* ARAugmentedRealityConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARAugmentedRealityConfig.m; sourceTree = "<group>"; };
 		C6DBE8251FBB899900BDD6BA /* AnimatingUIImageView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AnimatingUIImageView.h; sourceTree = "<group>"; };
 		C6DBE8261FBB899900BDD6BA /* AnimatingUIImageView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AnimatingUIImageView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -94,6 +97,8 @@
 				60BE43071FAE12C8004A503D /* main.m */,
 				C6DBE8251FBB899900BDD6BA /* AnimatingUIImageView.h */,
 				C6DBE8261FBB899900BDD6BA /* AnimatingUIImageView.m */,
+				C667D9FB1FBBC2FC00012D70 /* ARAugmentedRealityConfig.h */,
+				C667D9FC1FBBC2FC00012D70 /* ARAugmentedRealityConfig.m */,
 			);
 			path = ArtWallsThing;
 			sourceTree = "<group>";
@@ -183,6 +188,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C667D9FD1FBBC2FC00012D70 /* ARAugmentedRealityConfig.m in Sources */,
 				60BE42FD1FAE12C8004A503D /* ViewController.m in Sources */,
 				C6DBE8271FBB899900BDD6BA /* AnimatingUIImageView.m in Sources */,
 				60BE43081FAE12C8004A503D /* main.m in Sources */,

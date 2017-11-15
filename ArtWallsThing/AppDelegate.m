@@ -6,10 +6,10 @@
 //  Copyright © 2017 Orta Therox. All rights reserved.
 //
 
+#import "ARAugmentedRealityConfig.h"
 #import "ViewController.h"
 
 #import "AppDelegate.h"
-
 @interface AppDelegate ()
 
 @end
@@ -21,9 +21,11 @@
     // Override point for customization after application launch.
 
     UIImage *image = [UIImage imageNamed:@"large.jpg"];
+    ARAugmentedRealityConfig *config = [[ARAugmentedRealityConfig alloc] initWithImage:image
+                                                                                  size:CGSizeMake(11.0, 8.5)];
 
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    self.window.rootViewController = [[ViewController alloc] initWithImage:image];
+    self.window.rootViewController = [[ViewController alloc] initWithConfig:config];
     [self.window makeKeyAndVisible];
 
     return YES;
