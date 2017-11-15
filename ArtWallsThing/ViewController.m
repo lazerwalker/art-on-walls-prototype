@@ -234,22 +234,23 @@ NS_ASSUME_NONNULL_BEGIN
  * When you touch the screen, we check if your point hits the invisible plane
  * that we project out from the art's position (representing the wall, roughly).
  * If yes, immediately move the artwork there.
- * This is currently pretty slow, and is a janky experience.
  */
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
     if (touches.count != 1) { return; } // TODO
     if (!self.artwork) { return; }
-    
+
     UITouch *touch = [touches anyObject];
     CGPoint point = [touch locationInView:self.sceneView];
 
     NSDictionary *options = @{
       SCNHitTestIgnoreHiddenNodesKey: @NO,
+      SCNHitTestFirstFoundOnlyKey: @YES,
+      SCNHitTestOptionSearchMode: @(SCNHitTestSearchModeAny)
     };
 
     NSArray <SCNHitTestResult *> *results = [self.sceneView hitTest:point options: options];
     for (SCNHitTestResult *result in results) {
-        if ([result.node isEqual:self.plane]) {
+        if ([@[self.plane, self.artwork] containsObject:result.node]) {
             self.artwork.position = result.worldCoordinates;
         }
     }
