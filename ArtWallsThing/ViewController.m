@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) UILabel *userMessagesLabel;
 
 @property (nonatomic) BOOL isReady;
+@property (nonatomic) BOOL isMoving;
 
 @property (nonatomic, strong, readonly) ARAugmentedRealityConfig *config;
 
@@ -230,6 +231,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Touches
 
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
+    if (touches.count != 1) { return; } // TODO
+    UITouch *touch = [touches anyObject];
+    CGPoint point = [touch locationInView:self.sceneView];
+
+    NSArray <SCNHitTestResult *> *results = [self.sceneView hitTest:point options: nil];
+    for (SCNHitTestResult *result in results) {
+        if ([result.node isEqual:self.artwork]) {
+            self.isMoving = YES;
+        }
+    }
+}
+
 /**
  * The current implementation of moving art:
  * When you touch the screen, we check if your point hits the invisible plane
@@ -238,6 +252,7 @@ NS_ASSUME_NONNULL_BEGIN
  * This is currently pretty slow, and is a janky experience.
  */
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
+    if (!self.isMoving) { return; }
     if (touches.count != 1) { return; } // TODO
     UITouch *touch = [touches anyObject];
     CGPoint point = [touch locationInView:self.sceneView];
@@ -253,6 +268,15 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 }
+
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
+    self.isMoving = NO;
+}
+
+- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
+    self.isMoving = NO;
+}
+
 NS_ASSUME_NONNULL_END
 @end
 
