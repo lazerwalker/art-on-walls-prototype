@@ -123,8 +123,9 @@ NS_ASSUME_NONNULL_BEGIN
     imageMaterial.diffuse.contents = self.config.image;
     imageMaterial.locksAmbientWithDiffuse = YES;
 
-    // This appears to be the only way to only set our image to show up on one face
-    box.materials =  @[imageMaterial, blackMaterial, blackMaterial, blackMaterial, blackMaterial];
+    // TODO: It seems ARKit glitches out and is inconsistent about which face is the front/back.
+    // For now, simply showing the image on both sides gets the job done.
+    box.materials =  @[imageMaterial, blackMaterial, imageMaterial, blackMaterial, blackMaterial, blackMaterial];
 
     simd_float4x4 newLocationSimD = self.sceneView.session.currentFrame.camera.transform;
     SCNVector3 newLocation = SCNVector3Make(newLocationSimD.columns[3].x, newLocationSimD.columns[3].y, newLocationSimD.columns[3].z);
