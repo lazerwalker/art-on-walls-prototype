@@ -18,11 +18,15 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) ARSCNView *sceneView;
-@property (nonatomic, strong) SCNNode *artwork;
-@property (nonatomic, strong) SCNNode *plane;
 
-@property (nonatomic, strong) AnimatingUIImageView *imageView;
+@property (nonatomic, strong, nullable) SCNNode *artwork;
+@property (nonatomic, strong, nullable) SCNNode *plane;
+
+@property (nonatomic, strong, nullable) AnimatingUIImageView *imageView;
+@property (nonatomic, strong, nullable) UIView *bgView;
 @property (nonatomic, strong, nullable) UILabel *userMessagesLabel;
+
+@property (nonatomic, strong, nullable) UIButton *resetButton;
 
 @property (nonatomic) BOOL isReady;
 
@@ -45,6 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)viewDidLoad {
+    self.view.backgroundColor = UIColor.whiteColor;
     [super viewDidLoad];
 
     // TODO: Properly set this up with autolayout
@@ -63,18 +68,37 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.sceneView.scene = scene;
 
+    UIButton *resetButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    resetButton.backgroundColor = [UIColor lightGrayColor];
+    resetButton.tintColor = [UIColor whiteColor];
+
+    [resetButton setTitle:@"Reset" forState:UIControlStateNormal];
+    resetButton.translatesAutoresizingMaskIntoConstraints = false;
+
+    [resetButton addTarget:self action:@selector(reset) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:resetButton];
+
+    [self.view addConstraints: @[
+        [resetButton.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [resetButton.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        [resetButton.heightAnchor constraintEqualToConstant:44.0],
+        [resetButton.widthAnchor constraintGreaterThanOrEqualToConstant:100.0]
+    ]];
+    self.resetButton = resetButton;
+
     [self showUI];
 }
 
-- (IBAction)showUI
-{
+- (void)showUI {
     if (self.imageView) { return; }
+
+    self.resetButton.hidden = YES;
 
     UIView *backBG = [[UIView alloc] initWithFrame:self.view.bounds];
     backBG.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.6];
     AnimatingUIImageView * iv = [[AnimatingUIImageView alloc] initWithFrame:CGRectMake(0, backBG.center.y - 350, backBG.bounds.size.width, 400)];
-    self.imageView = iv;
     iv.contentMode = UIViewContentModeCenter;
+    self.imageView = iv;
     [self session:self.sceneView.session cameraDidChangeTrackingState:self.sceneView.session.currentFrame.camera];
 
     UILabel *messaging = [[UILabel alloc] initWithFrame:CGRectMake(40, backBG.center.y + 100, backBG.bounds.size.width-80, 200)];
@@ -88,6 +112,8 @@ NS_ASSUME_NONNULL_BEGIN
     [backBG addSubview:iv];
     [self.view insertSubview:backBG aboveSubview:self.sceneView];
 
+    self.bgView = backBG;
+
     UIGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(buttonTapped:)];
     [backBG addGestureRecognizer:tapGesture];
 }
@@ -95,6 +121,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)buttonTapped:(UITapGestureRecognizer *)gesture
 {
     if(!self.isReady) { return; }
+    
+    self.resetButton.hidden = NO;
 
     [gesture.view removeFromSuperview];
 
@@ -145,6 +173,22 @@ NS_ASSUME_NONNULL_BEGIN
     self.plane.hidden = true;
 
     [self.sceneView.scene.rootNode addChildNode: self.plane];
+}
+
+- (void)reset {
+    [self.imageView removeFromSuperview];
+    self.imageView = nil;
+
+    [self.bgView removeFromSuperview];
+    self.bgView = nil;
+
+    [self.artwork removeFromParentNode];
+    self.artwork = nil;
+
+    [self.plane removeFromParentNode];
+    self.plane = nil;
+
+    [self showUI];
 }
 
 - (void)viewWillAppear:(BOOL)animated {

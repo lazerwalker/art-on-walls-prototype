@@ -9,6 +9,7 @@
 @import UIKit;
 
 @interface ARAugmentedRealityConfig : NSObject
+NS_ASSUME_NONNULL_BEGIN
 
 /** The image to display on the wall */
 @property (nonatomic, strong, readonly, nullable) UIImage *image;
@@ -26,4 +27,5 @@
                                  size:(CGSize)size
                                 depth:(CGFloat)depth;
 
+NS_ASSUME_NONNULL_END
 @end
