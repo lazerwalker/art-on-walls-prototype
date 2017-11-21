@@ -52,7 +52,6 @@ NS_ASSUME_NONNULL_BEGIN
     self.view.backgroundColor = UIColor.whiteColor;
     [super viewDidLoad];
 
-    // TODO: Properly set this up with autolayout
     self.sceneView.frame = self.view.frame;
     [self.view addSubview:self.sceneView];
 
@@ -99,10 +98,9 @@ NS_ASSUME_NONNULL_BEGIN
     AnimatingUIImageView * iv = [[AnimatingUIImageView alloc] initWithFrame:CGRectMake(0, backBG.center.y - 350, backBG.bounds.size.width, 400)];
     iv.contentMode = UIViewContentModeCenter;
     self.imageView = iv;
-    [self session:self.sceneView.session cameraDidChangeTrackingState:self.sceneView.session.currentFrame.camera];
+    [self showTrackingMessageForCamera:nil];
 
     UILabel *messaging = [[UILabel alloc] initWithFrame:CGRectMake(40, backBG.center.y + 100, backBG.bounds.size.width-80, 200)];
-//    messaging.backgroundColor = [UIColor redColor];
     messaging.textColor = [UIColor whiteColor];
     messaging.font = [UIFont systemFontOfSize:24];
     messaging.numberOfLines = -1;
@@ -228,20 +226,30 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)session:(ARSession *)session cameraDidChangeTrackingState:(ARCamera *)camera
 {
+    if (!self.isReady) {
+        [self showTrackingMessageForCamera: camera];
+    }
+
+    self.isReady = camera.trackingState == ARTrackingStateNormal;
+}
+
+- (void)showTrackingMessageForCamera:(nullable ARCamera *)camera {
+    if (!camera) {
+        camera = self.sceneView.session.currentFrame.camera;
+    }
+    
     switch (camera.trackingState) {
         case ARTrackingStateNotAvailable:
         case ARTrackingStateLimited:
             [self.imageView start];
             self.userMessagesLabel.text = @"Please slowly move the camera around the room to start augmented reality";
-
+            
             break;
         case ARTrackingStateNormal:
             [self.imageView stop];
             self.imageView.image = [UIImage imageNamed:@"putphoneagainstwall.png"];
             self.userMessagesLabel.text = @"Please put your phone at eye level against the wall where you want to see your work \n\nThen hold one finger on the screen for 2 seconds ";
     }
-
-    self.isReady = camera.trackingState == ARTrackingStateNormal;
 }
 
 - (NSString *)stringForTrackingReason:(ARTrackingStateReason) reason {
