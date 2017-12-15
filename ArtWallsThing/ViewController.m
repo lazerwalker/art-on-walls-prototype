@@ -14,6 +14,17 @@
 
 #import "ViewController.h"
 
+typedef void (^OnboardingStepBlock)(void);
+
+NS_ENUM(NSUInteger, OnboardingStep) {
+    OnboardingStepDetectingPlanes,
+    OnboardingStepFinishedDetectingPlanes,
+    OnboardingStepPlacePhoneOnWall,
+    OnboardingStepWallDetected,
+    OnboardingStepViewing
+};
+
+
 @interface ViewController () <ARSCNViewDelegate>
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,16 +37,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) UIView *bgView;
 @property (nonatomic, strong, nullable) UILabel *userMessagesLabel;
 
-@property (nonatomic, strong, nullable) UIButton *resetButton;
+@property (nonatomic, strong, nullable) UIButton *button;
+@property (nonatomic, strong, nullable) UILabel *textLabel;
 
 @property (nonatomic) BOOL isReady;
 
-@property (nonatomic, strong, readonly) ARAugmentedRealityConfig *config;
+@property (nonatomic, copy) NSArray<OnboardingStepBlock> *steps;
+@property (nonatomic, assign) NSInteger currentStep;
 
+@property (nonatomic, strong, readonly) ARAugmentedRealityConfig *config;
 
 @end
 
-    
 @implementation ViewController
 
 - (instancetype)initWithConfig:(ARAugmentedRealityConfig *)config  {
@@ -44,6 +57,35 @@ NS_ASSUME_NONNULL_BEGIN
 
     _config = config;
     _sceneView = [[ARSCNView alloc] init];
+
+    // TODO: This might be clearer if it's a dict that's explicitly keyed by enum?
+    self.steps = @[
+        ^{
+            self.textLabel.hidden = NO;
+            self.textLabel.text = @"Slowly pan the room with your phone";
+            [self.button setTitle:@"animated" forState:UIControlStateNormal];
+        },
+        ^{
+            self.textLabel.hidden = NO;
+            self.textLabel.text = @"Slowly pan the room with your phone";
+            [self.button setTitle:@"NEXT" forState:UIControlStateNormal];
+        },
+        ^{
+            self.textLabel.hidden = NO;
+            self.textLabel.text = @"Place your phone on the wall where you want to see the work";
+            [self.button setTitle:@"animated" forState:UIControlStateNormal];
+        },
+        ^{
+            self.textLabel.hidden = NO;
+            self.textLabel.text = @"Place your phone on the wall where you want to see the work";
+            [self.button setTitle:@"NEXT" forState:UIControlStateNormal];
+        },
+        ^{
+            [self placeArt];
+            self.textLabel.hidden = YES;
+            [self.button setTitle:@"Reset" forState:UIControlStateNormal];
+        }
+    ];
 
     return self;
 }
@@ -67,63 +109,61 @@ NS_ASSUME_NONNULL_BEGIN
 
     self.sceneView.scene = scene;
 
-    UIButton *resetButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    resetButton.backgroundColor = [UIColor lightGrayColor];
-    resetButton.tintColor = [UIColor whiteColor];
+    // Button
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+    button.backgroundColor = [UIColor lightGrayColor];
+    button.tintColor = [UIColor whiteColor];
+    button.translatesAutoresizingMaskIntoConstraints = false;
 
-    [resetButton setTitle:@"Reset" forState:UIControlStateNormal];
-    resetButton.translatesAutoresizingMaskIntoConstraints = false;
-
-    [resetButton addTarget:self action:@selector(reset) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:resetButton];
+    [button addTarget:self action:@selector(showNextStep) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:button];
 
     [self.view addConstraints: @[
-        [resetButton.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-        [resetButton.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
-        [resetButton.heightAnchor constraintEqualToConstant:44.0],
-        [resetButton.widthAnchor constraintGreaterThanOrEqualToConstant:100.0]
+        [button.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [button.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant: -20.0],
+        [button.heightAnchor constraintEqualToConstant:44.0],
+        [button.widthAnchor constraintGreaterThanOrEqualToConstant:100.0]
     ]];
-    self.resetButton = resetButton;
+    self.button = button;
 
-    [self showUI];
+    // Text label
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
+    label.textColor = UIColor.whiteColor;
+    label.font = [UIFont systemFontOfSize:24.0];
+    label.translatesAutoresizingMaskIntoConstraints = false;
+    label.numberOfLines = 0;
+    label.lineBreakMode = NSLineBreakByWordWrapping;
+
+    [self.view addSubview:label];
+
+    [self.view addConstraints: @[
+        [label.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:12.0],
+        [label.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant: -20.0],
+        [label.trailingAnchor constraintEqualToAnchor:button.leadingAnchor constant: 12.0]
+    ]];
+    self.textLabel = label;
+
+    [self showCurrentStep];
 }
 
-- (void)showUI {
-    if (self.imageView) { return; }
+- (void)showNextStep {
+    self.currentStep += 1;
+    if (self.currentStep > OnboardingStepViewing) {
+        // Reset
+        [self reset];
+        self.currentStep = OnboardingStepPlacePhoneOnWall;
+    }
 
-    self.resetButton.hidden = YES;
-
-    UIView *backBG = [[UIView alloc] initWithFrame:self.view.bounds];
-    backBG.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.6];
-    AnimatingUIImageView * iv = [[AnimatingUIImageView alloc] initWithFrame:CGRectMake(0, backBG.center.y - 350, backBG.bounds.size.width, 400)];
-    iv.contentMode = UIViewContentModeCenter;
-    self.imageView = iv;
-    [self showTrackingMessageForCamera:nil];
-
-    UILabel *messaging = [[UILabel alloc] initWithFrame:CGRectMake(40, backBG.center.y + 100, backBG.bounds.size.width-80, 200)];
-    messaging.textColor = [UIColor whiteColor];
-    messaging.font = [UIFont systemFontOfSize:24];
-    messaging.numberOfLines = -1;
-    self.userMessagesLabel = messaging;
-    [backBG addSubview: messaging];
-
-    [backBG addSubview:iv];
-    [self.view insertSubview:backBG aboveSubview:self.sceneView];
-
-    self.bgView = backBG;
-
-    UIGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(buttonTapped:)];
-    [backBG addGestureRecognizer:tapGesture];
+    [self showCurrentStep];
 }
 
-- (IBAction)buttonTapped:(UITapGestureRecognizer *)gesture
-{
+- (void)showCurrentStep {
+    self.steps[self.currentStep]();
+}
+
+- (void)placeArt {
     if(!self.isReady) { return; }
     
-    self.resetButton.hidden = NO;
-
-    [gesture.view removeFromSuperview];
-
     CGFloat width = [[[[NSMeasurement alloc] initWithDoubleValue:self.config.size.width
                                                             unit:NSUnitLength.inches]
                       measurementByConvertingToUnit:NSUnitLength.meters]
@@ -174,19 +214,13 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)reset {
-    [self.imageView removeFromSuperview];
-    self.imageView = nil;
-
-    [self.bgView removeFromSuperview];
-    self.bgView = nil;
-
     [self.artwork removeFromParentNode];
     self.artwork = nil;
 
     [self.plane removeFromParentNode];
     self.plane = nil;
 
-    [self showUI];
+    self.currentStep = OnboardingStepPlacePhoneOnWall;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -206,23 +240,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.sceneView.session pause];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Release any cached data, images, etc that aren't in use.
-}
-
 #pragma mark - ARSCNViewDelegate
-
-/*
-// Override to create and configure nodes for anchors added to the view's session.
-- (SCNNode *)renderer:(id<SCNSceneRenderer>)renderer nodeForAnchor:(ARAnchor *)anchor {
-    SCNNode *node = [SCNNode new];
- 
-    // Add geometry to the node...
- 
-    return node;
-}
-*/
 
 - (void)session:(ARSession *)session cameraDidChangeTrackingState:(ARCamera *)camera
 {
@@ -241,27 +259,15 @@ NS_ASSUME_NONNULL_BEGIN
     switch (camera.trackingState) {
         case ARTrackingStateNotAvailable:
         case ARTrackingStateLimited:
-            [self.imageView start];
-            self.userMessagesLabel.text = @"Please slowly move the camera around the room to start augmented reality";
-            
+            if (self.currentStep == OnboardingStepPlacePhoneOnWall) {
+                [self showNextStep];
+            }
             break;
         case ARTrackingStateNormal:
-            [self.imageView stop];
-            self.imageView.image = [UIImage imageNamed:@"putphoneagainstwall.png"];
-            self.userMessagesLabel.text = @"Please put your phone at eye level against the wall where you want to see your work \n\nThen hold one finger on the screen for 2 seconds ";
-    }
-}
-
-- (NSString *)stringForTrackingReason:(ARTrackingStateReason) reason {
-    switch (reason) {
-        case ARTrackingStateReasonNone:
-            return nil;
-        case ARTrackingStateReasonInitializing:
-            return @"Loading";
-        case ARTrackingStateReasonExcessiveMotion:
-            return @"Too much movement";
-        case ARTrackingStateReasonInsufficientFeatures:
-            return @"Need to understand room better";
+            if (self.currentStep == OnboardingStepDetectingPlanes) {
+                [self showNextStep];
+            }
+            break;
     }
 }
 
