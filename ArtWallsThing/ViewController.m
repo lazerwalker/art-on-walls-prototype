@@ -202,7 +202,7 @@ NS_ASSUME_NONNULL_BEGIN
     box.materials =  @[imageMaterial, blackMaterial, imageMaterial, blackMaterial, blackMaterial, blackMaterial];
 
     simd_float4x4 newLocationSimD = self.sceneView.session.currentFrame.camera.transform;
-    SCNVector3 newLocation = SCNVector3Make(newLocationSimD.columns[3].x, newLocationSimD.columns[3].y, newLocationSimD.columns[3].z);
+    SCNVector3 newLocation = SCNVector3Make(newLocationSimD.columns[3].x, newLocationSimD.columns[3].y, newLocationSimD.columns[3].z - 0.1);
 
     self.artwork = [SCNNode nodeWithGeometry:box];
     self.artwork.position = newLocation;
