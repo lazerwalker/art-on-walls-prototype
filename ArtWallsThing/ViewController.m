@@ -63,27 +63,35 @@ NS_ASSUME_NONNULL_BEGIN
         ^{
             self.textLabel.hidden = NO;
             self.textLabel.text = @"Slowly pan the room with your phone";
-            [self.button setTitle:@"animated" forState:UIControlStateNormal];
+
+            self.button.hidden = YES;
         },
         ^{
             self.textLabel.hidden = NO;
             self.textLabel.text = @"Slowly pan the room with your phone";
-            [self.button setTitle:@"NEXT" forState:UIControlStateNormal];
+
+            self.button.hidden = NO;
+            [self.button setImage:[UIImage imageNamed:@"next"] forState:UIControlStateNormal];
         },
         ^{
             self.textLabel.hidden = NO;
             self.textLabel.text = @"Place your phone on the wall where you want to see the work";
-            [self.button setTitle:@"animated" forState:UIControlStateNormal];
+
+            self.button.hidden = YES;
         },
         ^{
             self.textLabel.hidden = NO;
             self.textLabel.text = @"Place your phone on the wall where you want to see the work";
-            [self.button setTitle:@"NEXT" forState:UIControlStateNormal];
+
+            self.button.hidden = NO;
+            [self.button setImage:[UIImage imageNamed:@"next"] forState:UIControlStateNormal];
         },
         ^{
             [self placeArt];
             self.textLabel.hidden = YES;
-            [self.button setTitle:@"Reset" forState:UIControlStateNormal];
+
+            self.button.hidden = NO;
+            [self.button setImage:[UIImage imageNamed:@"reset"] forState:UIControlStateNormal];
         }
     ];
 
@@ -111,7 +119,6 @@ NS_ASSUME_NONNULL_BEGIN
 
     // Button
     UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
-    button.backgroundColor = [UIColor lightGrayColor];
     button.tintColor = [UIColor whiteColor];
     button.translatesAutoresizingMaskIntoConstraints = false;
 
@@ -120,9 +127,9 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self.view addConstraints: @[
         [button.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-        [button.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant: -20.0],
-        [button.heightAnchor constraintEqualToConstant:44.0],
-        [button.widthAnchor constraintGreaterThanOrEqualToConstant:100.0]
+        [button.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor constant: -30.0],
+        [button.heightAnchor constraintEqualToConstant:50.0],
+        [button.widthAnchor constraintGreaterThanOrEqualToConstant:50.0]
     ]];
     self.button = button;
 
