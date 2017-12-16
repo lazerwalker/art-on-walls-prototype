@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) UIButton *button;
 @property (nonatomic, strong, nullable) UILabel *textLabel;
 
-@property (nonatomic, copy) NSArray<OnboardingStepBlock> *steps;
+@property (nonatomic, copy) NSDictionary<NSNumber *, OnboardingStepBlock> *steps;
 @property (nonatomic, assign) NSInteger currentStep;
 
 @property (nonatomic, strong, readonly) ARAugmentedRealityConfig *config;
@@ -60,35 +60,34 @@ NS_ASSUME_NONNULL_BEGIN
     _config = config;
     _sceneView = [[ARSCNView alloc] init];
 
-    // TODO: This might be clearer if it's a dict that's explicitly keyed by enum?
-    self.steps = @[
-        ^{
+    self.steps = @{
+       @(OnboardingStepDetectingPlanes) : ^{
             self.textLabel.hidden = NO;
             self.textLabel.text = @"Slowly pan the room with your phone";
 
             self.button.hidden = YES;
         },
-        ^{
+        @(OnboardingStepFinishedDetectingPlanes) : ^{
             self.textLabel.hidden = NO;
             self.textLabel.text = @"Slowly pan the room with your phone";
 
             self.button.hidden = NO;
             [self.button setImage:[UIImage imageNamed:@"next"] forState:UIControlStateNormal];
         },
-        ^{
+        @(OnboardingStepPlacePhoneOnWall): ^{
             self.textLabel.hidden = NO;
             self.textLabel.text = @"Place your phone on the wall where you want to see the work";
 
             self.button.hidden = YES;
         },
-        ^{
+        @(OnboardingStepWallDetected): ^{
             self.textLabel.hidden = NO;
             self.textLabel.text = @"Place your phone on the wall where you want to see the work";
 
             self.button.hidden = NO;
             [self.button setImage:[UIImage imageNamed:@"next"] forState:UIControlStateNormal];
         },
-        ^{
+        @(OnboardingStepViewing): ^{
             [self placeArt];
             self.textLabel.hidden = YES;
 
@@ -99,7 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
             self.button.hidden = NO;
             [self.button setImage:[UIImage imageNamed:@"reset"] forState:UIControlStateNormal];
         }
-    ];
+    };
 
     return self;
 }
@@ -173,7 +172,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showNextStep {
     self.currentStep += 1;
     if (self.currentStep > OnboardingStepViewing) {
-        // Reset
         [self reset];
         self.currentStep = OnboardingStepPlacePhoneOnWall;
     }
@@ -182,7 +180,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)showCurrentStep {
-    self.steps[self.currentStep]();
+    self.steps[@(self.currentStep)]();
 }
 
 - (void)placeArt {
@@ -274,8 +272,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)renderer:(id<SCNSceneRenderer>)renderer didRenderScene:(SCNScene *)scene atTime:(NSTimeInterval)time {
+    // If the user is sufficiently far away from the semi-transparent art, fade it in
     if (self.currentStep == OnboardingStepViewing) {
-        // Fade in the art after the user's stepped far enough back
         CGFloat minDistance = 0.2;
         if (ABS(self.placedCameraPosition.columns[3].z - self.sceneView.session.currentFrame.camera.transform.columns[3].z) >= minDistance) {
             // If this gets any more complicated, it might want to become a state transition instead of inline logic (e.g. OnboardingStepPlaced -> OnboardingStepViewing)
