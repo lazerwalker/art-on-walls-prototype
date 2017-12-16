@@ -40,12 +40,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) UIButton *button;
 @property (nonatomic, strong, nullable) UILabel *textLabel;
 
-@property (nonatomic) BOOL isReady;
-
 @property (nonatomic, copy) NSArray<OnboardingStepBlock> *steps;
 @property (nonatomic, assign) NSInteger currentStep;
 
 @property (nonatomic, strong, readonly) ARAugmentedRealityConfig *config;
+
+@property (nonatomic, strong) SCNMaterial *blackMaterial;
+@property (nonatomic, strong) SCNMaterial *imageMaterial;
+@property (nonatomic, assign) simd_float4x4 placedCameraPosition;
 
 @end
 
@@ -91,6 +93,10 @@ NS_ASSUME_NONNULL_BEGIN
             [self placeArt];
             self.textLabel.hidden = YES;
 
+            self.placedCameraPosition = self.sceneView.session.currentFrame.camera.transform;
+            self.blackMaterial.transparency = 0.5;
+            self.imageMaterial.transparency = 0.5;
+
             self.button.hidden = NO;
             [self.button setImage:[UIImage imageNamed:@"reset"] forState:UIControlStateNormal];
         }
@@ -117,6 +123,17 @@ NS_ASSUME_NONNULL_BEGIN
     self.sceneView.debugOptions = ARSCNDebugOptionShowWorldOrigin | ARSCNDebugOptionShowFeaturePoints;
 
     self.sceneView.scene = scene;
+
+    // Art materials
+    SCNMaterial *blackMaterial = [SCNMaterial material];
+    blackMaterial.diffuse.contents = [UIColor blackColor];
+    blackMaterial.locksAmbientWithDiffuse = YES;
+    self.blackMaterial = blackMaterial;
+
+    SCNMaterial *imageMaterial = [[SCNMaterial alloc] init];
+    imageMaterial.diffuse.contents = self.config.image;
+    imageMaterial.locksAmbientWithDiffuse = YES;
+    self.imageMaterial = imageMaterial;
 
     // Button
     UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -170,8 +187,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)placeArt {
-    if(!self.isReady) { return; }
-    
+
     CGFloat width = [[[[NSMeasurement alloc] initWithDoubleValue:self.config.size.width
                                                             unit:NSUnitLength.inches]
                       measurementByConvertingToUnit:NSUnitLength.meters]
@@ -189,17 +205,9 @@ NS_ASSUME_NONNULL_BEGIN
 
     SCNBox *box = [SCNBox boxWithWidth:width height:height length:length chamferRadius:0];
 
-    SCNMaterial *blackMaterial = [SCNMaterial material];
-    blackMaterial.diffuse.contents = [UIColor blackColor];
-    blackMaterial.locksAmbientWithDiffuse = YES;
-
-    SCNMaterial *imageMaterial = [[SCNMaterial alloc] init];
-    imageMaterial.diffuse.contents = self.config.image;
-    imageMaterial.locksAmbientWithDiffuse = YES;
-
     // TODO: It seems ARKit glitches out and is inconsistent about which face is the front/back.
     // For now, simply showing the image on both sides gets the job done.
-    box.materials =  @[imageMaterial, blackMaterial, imageMaterial, blackMaterial, blackMaterial, blackMaterial];
+    box.materials =  @[self.imageMaterial, self.blackMaterial, self.imageMaterial, self.blackMaterial, self.blackMaterial, self.blackMaterial];
 
     simd_float4x4 newLocationSimD = self.sceneView.session.currentFrame.camera.transform;
     SCNVector3 newLocation = SCNVector3Make(newLocationSimD.columns[3].x, newLocationSimD.columns[3].y, newLocationSimD.columns[3].z - 0.1);
@@ -250,20 +258,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - ARSCNViewDelegate
 
-- (void)session:(ARSession *)session cameraDidChangeTrackingState:(ARCamera *)camera
-{
-    if (!self.isReady) {
-        [self showTrackingMessageForCamera: camera];
-    }
-
-    self.isReady = camera.trackingState == ARTrackingStateNormal;
-}
-
-- (void)showTrackingMessageForCamera:(nullable ARCamera *)camera {
-    if (!camera) {
-        camera = self.sceneView.session.currentFrame.camera;
-    }
-    
+- (void)session:(ARSession *)session cameraDidChangeTrackingState:(ARCamera *)camera {
     switch (camera.trackingState) {
         case ARTrackingStateNotAvailable:
         case ARTrackingStateLimited:
@@ -276,6 +271,18 @@ NS_ASSUME_NONNULL_BEGIN
                 [self showNextStep];
             }
             break;
+    }
+}
+
+- (void)renderer:(id<SCNSceneRenderer>)renderer didRenderScene:(SCNScene *)scene atTime:(NSTimeInterval)time {
+    if (self.currentStep == OnboardingStepViewing) {
+        // Fade in the art after the user's stepped far enough back
+        CGFloat minDistance = 0.2;
+        if (ABS(self.placedCameraPosition.columns[3].z - self.sceneView.session.currentFrame.camera.transform.columns[3].z) >= minDistance) {
+            // If this gets any more complicated, it might want to become a state transition instead of inline logic (e.g. OnboardingStepPlaced -> OnboardingStepViewing)
+            self.blackMaterial.transparency = 1.0;
+            self.imageMaterial.transparency = 1.0;
+        }
     }
 }
 
