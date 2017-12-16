@@ -79,12 +79,11 @@ NS_ASSUME_NONNULL_BEGIN
             self.textLabel.hidden = NO;
             self.textLabel.text = @"Place your phone on the wall where you want to see the work";
 
-            self.button.hidden = NO;
-            [self.button setImage:[UIImage imageNamed:@"next"] forState:UIControlStateNormal];
+            self.button.hidden = YES;
         },
         ^{
             self.textLabel.hidden = NO;
-            self.textLabel.text = @"WALL DETECTED. Push the button to place.";
+            self.textLabel.text = @"Place your phone on the wall where you want to see the work";
 
             self.button.hidden = NO;
             [self.button setImage:[UIImage imageNamed:@"next"] forState:UIControlStateNormal];
