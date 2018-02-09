@@ -13,6 +13,9 @@
 #import "AnimatingUIImageView.h"
 
 #import "ViewController.h"
+#import "WallViewSceneDelegate.h"
+
+#import "SCNArtworkNode.h"
 
 @interface ViewController () <ARSCNViewDelegate>
 NS_ASSUME_NONNULL_BEGIN
@@ -32,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) ARAugmentedRealityConfig *config;
 
+@property (nonatomic, strong) id<ARSCNViewDelegate, ARInteractive> visualsDelegate;
 
 @end
 
@@ -44,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     _config = config;
     _sceneView = [[ARSCNView alloc] init];
+    _visualsDelegate = [[WallViewSceneDelegate alloc] initWithSession:_sceneView.session config:config];
 
     return self;
 }
@@ -94,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.resetButton.hidden = YES;
 
     UIView *backBG = [[UIView alloc] initWithFrame:self.view.bounds];
-    backBG.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.6];
+    backBG.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.1];
     AnimatingUIImageView * iv = [[AnimatingUIImageView alloc] initWithFrame:CGRectMake(0, backBG.center.y - 350, backBG.bounds.size.width, 400)];
     iv.contentMode = UIViewContentModeCenter;
     self.imageView = iv;
@@ -105,72 +110,50 @@ NS_ASSUME_NONNULL_BEGIN
     messaging.font = [UIFont systemFontOfSize:24];
     messaging.numberOfLines = -1;
     self.userMessagesLabel = messaging;
-    [backBG addSubview: messaging];
+//    [backBG addSubview: messaging];
+//
+//    [backBG addSubview:iv];
+//    [self.view insertSubview:backBG aboveSubview:self.sceneView];
 
-    [backBG addSubview:iv];
-    [self.view insertSubview:backBG aboveSubview:self.sceneView];
-
-    self.bgView = backBG;
+//    self.bgView = backBG;
 
     UIGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(buttonTapped:)];
-    [backBG addGestureRecognizer:tapGesture];
+    [self.sceneView addGestureRecognizer:tapGesture];
 }
 
 - (IBAction)buttonTapped:(UITapGestureRecognizer *)gesture
 {
-    if(!self.isReady) { return; }
-    
+//    if(!self.isReady) { return; }
+
     self.resetButton.hidden = NO;
 
-    [gesture.view removeFromSuperview];
+//    [gesture.view removeFromSuperview];
+    [self.visualsDelegate tappedScreen:gesture];
+    
 
-    CGFloat width = [[[[NSMeasurement alloc] initWithDoubleValue:self.config.size.width
-                                                            unit:NSUnitLength.inches]
-                      measurementByConvertingToUnit:NSUnitLength.meters]
-                     doubleValue];
-    ;
-    CGFloat height = [[[[NSMeasurement alloc] initWithDoubleValue:self.config.size.height
-                                                             unit:NSUnitLength.inches]
-                       measurementByConvertingToUnit:NSUnitLength.meters]
-                      doubleValue];
-
-    CGFloat length = [[[[NSMeasurement alloc] initWithDoubleValue:self.config.depth
-                                                             unit:NSUnitLength.inches]
-                       measurementByConvertingToUnit:NSUnitLength.meters]
-                      doubleValue];
-
-    SCNBox *box = [SCNBox boxWithWidth:width height:height length:length chamferRadius:0];
-
-    SCNMaterial *blackMaterial = [SCNMaterial material];
-    blackMaterial.diffuse.contents = [UIColor blackColor];
-    blackMaterial.locksAmbientWithDiffuse = YES;
-
-    SCNMaterial *imageMaterial = [[SCNMaterial alloc] init];
-    imageMaterial.diffuse.contents = self.config.image;
-    imageMaterial.locksAmbientWithDiffuse = YES;
-
-    // TODO: It seems ARKit glitches out and is inconsistent about which face is the front/back.
-    // For now, simply showing the image on both sides gets the job done.
-    box.materials =  @[imageMaterial, blackMaterial, imageMaterial, blackMaterial, blackMaterial, blackMaterial];
-
-    simd_float4x4 newLocationSimD = self.sceneView.session.currentFrame.camera.transform;
-    SCNVector3 newLocation = SCNVector3Make(newLocationSimD.columns[3].x, newLocationSimD.columns[3].y, newLocationSimD.columns[3].z);
-
-    self.artwork = [SCNNode nodeWithGeometry:box];
-    self.artwork.position = newLocation;
-    [self.sceneView.scene.rootNode addChildNode:self.artwork];
+//    SCNBox *box = [SCNArtworkNode nodeWithConfig:self.config];
+//
+//    simd_float4x4 newLocationSimD = self.sceneView.session.currentFrame.camera.transform;
+//    SCNVector3 newLocation = SCNVector3Make(newLocationSimD.columns[3].x, newLocationSimD.columns[3].y, newLocationSimD.columns[3].z);
+//
+//    self.artwork = [SCNNode nodeWithGeometry:box];
+//    self.artwork.position = newLocation;
+//    [self.sceneView.scene.rootNode addChildNode:self.artwork];
 
     // To properly move the art in the real world, we project a vertical plane we can hitTest against later
     // TODO: I wonder if we can generate this automatically later, rather than having a hidden object in our 3D scene
 
     // There doesn't appear to be a way to flat-out create an infinite plane.
     // 1000x1000 meters seems like a sensible upper bound that doesn't destroy performance
-    SCNPlane *infinitePlane = [SCNPlane planeWithWidth:1000 height:1000];
-    self.plane = [SCNNode nodeWithGeometry:infinitePlane];
-    self.plane.position = newLocation;
-    self.plane.hidden = true;
 
-    [self.sceneView.scene.rootNode addChildNode: self.plane];
+//
+//
+//    SCNPlane *infinitePlane = [SCNPlane planeWithWidth:1000 height:1000];
+//    self.plane = [SCNNode nodeWithGeometry:infinitePlane];
+//    self.plane.position = newLocation;
+//    self.plane.hidden = true;
+
+//    [self.sceneView.scene.rootNode addChildNode: self.plane];
 }
 
 - (void)reset {
@@ -194,6 +177,7 @@ NS_ASSUME_NONNULL_BEGIN
     
     // Create a session configuration
     ARWorldTrackingConfiguration *configuration = [ARWorldTrackingConfiguration new];
+    configuration.planeDetection = ARPlaneDetectionVertical;
 
     // Run the view's session
     [self.sceneView.session runWithConfiguration:configuration];
@@ -262,6 +246,8 @@ NS_ASSUME_NONNULL_BEGIN
             return @"Too much movement";
         case ARTrackingStateReasonInsufficientFeatures:
             return @"Need to understand room better";
+        case ARTrackingStateReasonRelocalizing:
+            return @"Re-localizing";
     }
 }
 
@@ -277,8 +263,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)sessionInterruptionEnded:(ARSession *)session {
     // Reset tracking and/or remove existing anchors if consistent tracking is required
-    
 }
+
+- (void)renderer:(id<SCNSceneRenderer>)renderer didUpdateNode:(SCNNode *)node forAnchor:(ARAnchor *)anchor
+{
+    [self.visualsDelegate renderer:renderer didUpdateNode:node forAnchor:anchor];
+}
+
+- (void)renderer:(id <SCNSceneRenderer>)renderer didAddNode:(SCNNode *)node forAnchor:(ARAnchor *)anchor;
+{
+    [self.visualsDelegate renderer:renderer didAddNode:node forAnchor:anchor];
+}
+
+- (void)renderer:(id<SCNSceneRenderer>)renderer willRenderScene:(SCNScene *)scene atTime:(NSTimeInterval)time
+{
+    [self.visualsDelegate renderer:renderer willRenderScene:scene atTime:time];
+}
+
 
 #pragma mark - Touches
 /**

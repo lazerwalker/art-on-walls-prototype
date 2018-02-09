@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6008A130202A0D0800DC328C /* WallViewSceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6008A12F202A0D0800DC328C /* WallViewSceneDelegate.m */; };
 		6036DC731FAE1FC1005E9EC3 /* large.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 6036DC721FAE1FC1005E9EC3 /* large.jpg */; };
 		603F5FFC1FAF4FB10041A35A /* putphoneagainstwall.png in Resources */ = {isa = PBXBuildFile; fileRef = 603F5FFB1FAF4FB10041A35A /* putphoneagainstwall.png */; };
 		603F60001FAF58DB0041A35A /* move2.png in Resources */ = {isa = PBXBuildFile; fileRef = 603F5FFD1FAF58DA0041A35A /* move2.png */; };
 		603F60011FAF58DB0041A35A /* move3.png in Resources */ = {isa = PBXBuildFile; fileRef = 603F5FFE1FAF58DA0041A35A /* move3.png */; };
 		603F60021FAF58DB0041A35A /* move1.png in Resources */ = {isa = PBXBuildFile; fileRef = 603F5FFF1FAF58DB0041A35A /* move1.png */; };
+		607D0ECB202E302C00107E1E /* SCNArtworkNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 607D0ECA202E302C00107E1E /* SCNArtworkNode.m */; };
 		60BE42F81FAE12C8004A503D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 60BE42F71FAE12C8004A503D /* AppDelegate.m */; };
 		60BE42FA1FAE12C8004A503D /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = 60BE42F91FAE12C8004A503D /* art.scnassets */; };
 		60BE42FD1FAE12C8004A503D /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 60BE42FC1FAE12C8004A503D /* ViewController.m */; };
@@ -25,11 +27,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6008A12E202A0D0800DC328C /* WallViewSceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WallViewSceneDelegate.h; sourceTree = "<group>"; };
+		6008A12F202A0D0800DC328C /* WallViewSceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WallViewSceneDelegate.m; sourceTree = "<group>"; };
 		6036DC721FAE1FC1005E9EC3 /* large.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = large.jpg; sourceTree = "<group>"; };
 		603F5FFB1FAF4FB10041A35A /* putphoneagainstwall.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = putphoneagainstwall.png; sourceTree = "<group>"; };
 		603F5FFD1FAF58DA0041A35A /* move2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = move2.png; sourceTree = "<group>"; };
 		603F5FFE1FAF58DA0041A35A /* move3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = move3.png; sourceTree = "<group>"; };
 		603F5FFF1FAF58DB0041A35A /* move1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = move1.png; sourceTree = "<group>"; };
+		607D0EC9202E302C00107E1E /* SCNArtworkNode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCNArtworkNode.h; sourceTree = "<group>"; };
+		607D0ECA202E302C00107E1E /* SCNArtworkNode.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SCNArtworkNode.m; sourceTree = "<group>"; };
 		60BE42F31FAE12C8004A503D /* ArtWallsThing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ArtWallsThing.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		60BE42F61FAE12C8004A503D /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		60BE42F71FAE12C8004A503D /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -91,6 +97,8 @@
 				60BE42F91FAE12C8004A503D /* art.scnassets */,
 				60BE42FB1FAE12C8004A503D /* ViewController.h */,
 				60BE42FC1FAE12C8004A503D /* ViewController.m */,
+				607D0EC9202E302C00107E1E /* SCNArtworkNode.h */,
+				607D0ECA202E302C00107E1E /* SCNArtworkNode.m */,
 				60BE43011FAE12C8004A503D /* Assets.xcassets */,
 				60BE43031FAE12C8004A503D /* LaunchScreen.storyboard */,
 				60BE43061FAE12C8004A503D /* Info.plist */,
@@ -99,6 +107,8 @@
 				C6DBE8261FBB899900BDD6BA /* AnimatingUIImageView.m */,
 				C667D9FB1FBBC2FC00012D70 /* ARAugmentedRealityConfig.h */,
 				C667D9FC1FBBC2FC00012D70 /* ARAugmentedRealityConfig.m */,
+				6008A12E202A0D0800DC328C /* WallViewSceneDelegate.h */,
+				6008A12F202A0D0800DC328C /* WallViewSceneDelegate.m */,
 			);
 			path = ArtWallsThing;
 			sourceTree = "<group>";
@@ -188,10 +198,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				607D0ECB202E302C00107E1E /* SCNArtworkNode.m in Sources */,
 				C667D9FD1FBBC2FC00012D70 /* ARAugmentedRealityConfig.m in Sources */,
 				60BE42FD1FAE12C8004A503D /* ViewController.m in Sources */,
 				C6DBE8271FBB899900BDD6BA /* AnimatingUIImageView.m in Sources */,
 				60BE43081FAE12C8004A503D /* main.m in Sources */,
+				6008A130202A0D0800DC328C /* WallViewSceneDelegate.m in Sources */,
 				60BE42F81FAE12C8004A503D /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -319,9 +331,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 48WB56AE4K;
+				DEVELOPMENT_TEAM = 23KMWZ572J;
 				INFOPLIST_FILE = ArtWallsThing/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = io.orta.ArtWallsThing;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -334,9 +346,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 48WB56AE4K;
+				DEVELOPMENT_TEAM = 23KMWZ572J;
 				INFOPLIST_FILE = ArtWallsThing/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = io.orta.ArtWallsThing;
 				PRODUCT_NAME = "$(TARGET_NAME)";
