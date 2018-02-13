@@ -5,19 +5,22 @@
 
 @interface WallViewSceneDelegate()
 @property ARSession *session;
+@property ARSCNView *sceneView;
 @property ARAugmentedRealityConfig *config;
 @property NSArray<SCNNode *> *detectedPlanes;
 @property NSArray<SCNNode *> *invisibleWalls;
+@property SCNNode *ghostWork;
 @end
 
 NSInteger wallHeight = 5;
 
 @implementation WallViewSceneDelegate
 
-- (instancetype)initWithSession:(ARSession *)session config:(ARAugmentedRealityConfig *)config
+- (instancetype)initWithSession:(ARSession *)session config:(ARAugmentedRealityConfig *)config scene:(SCNView *)scene
 {
     self = [super init];
     _session = session;
+    _sceneView = scene;
     _config = config;
     _invisibleWalls = @[];
     _detectedPlanes = @[];
@@ -31,7 +34,7 @@ NSInteger wallHeight = 5;
         return;
     }
 
-    SCNView *sceneView = (id)gesture.view;
+    ARSCNView *sceneView = (id)gesture.view;
 
     CGPoint point = [gesture locationOfTouch:0 inView:sceneView];
 
@@ -56,10 +59,51 @@ NSInteger wallHeight = 5;
             SCNNode *artwork = [SCNNode nodeWithGeometry:box];
             artwork.position = result.localCoordinates;
             [result.node addChildNode:artwork];
+            return;
         } else {
             NSLog(@"Childs %@", result.node.childNodes);
         }
     }
+}
+
+- (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame;
+{
+    if (!self.invisibleWalls.count) {
+        return;
+    }
+
+
+    NSDictionary *options = @{
+        SCNHitTestIgnoreHiddenNodesKey: @NO,
+        SCNHitTestFirstFoundOnlyKey: @YES,
+        SCNHitTestOptionSearchMode: @(SCNHitTestSearchModeAll)
+    };
+
+    NSArray <SCNHitTestResult *> *results = [self.sceneView hitTest:self.sceneView.center options: options];
+    for (SCNHitTestResult *result in results) {
+        NSLog(@"-- %@", result.node);
+
+        if ([self.invisibleWalls containsObject:result.node]) {
+            if (!self.ghostWork) {
+                SCNArtworkNode *ghostBox = [SCNArtworkNode nodeWithConfig:self.config];
+                SCNNode *ghostWork = [SCNNode nodeWithGeometry:ghostBox];
+                ghostWork.opacity = 0.5;
+
+                [result.node addChildNode:ghostWork];
+                self.ghostWork = ghostWork;
+            }
+
+            self.ghostWork.position = result.localCoordinates;
+            return;
+        }
+    }
+
+    if(self.ghostWork) {
+        [self.ghostWork removeFromParentNode];
+        self.ghostWork = nil;
+    }
+
+
 }
 
 //- (void)hitTestForWall:(ARFrame *)frame devicePoint:(CGPoint)point

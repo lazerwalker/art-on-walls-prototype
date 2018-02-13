@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) ARAugmentedRealityConfig *config;
 
-@property (nonatomic, strong) id<ARSCNViewDelegate, ARInteractive> visualsDelegate;
+@property (nonatomic, strong) id<ARSCNViewDelegate, ARInteractive, ARSessionDelegate> visualsDelegate;
 
 @end
 
@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     _config = config;
     _sceneView = [[ARSCNView alloc] init];
-    _visualsDelegate = [[WallViewSceneDelegate alloc] initWithSession:_sceneView.session config:config];
+    _visualsDelegate = [[WallViewSceneDelegate alloc] initWithSession:_sceneView.session config:config scene:_sceneView];
 
     return self;
 }
@@ -64,11 +64,13 @@ NS_ASSUME_NONNULL_BEGIN
     self.sceneView.delegate = self;
     
     // Show statistics such as fps and timing information
-    self.sceneView.showsStatistics = YES;
+//    self.sceneView.showsStatistics = YES;
+
+    self.sceneView.session.delegate = self.visualsDelegate;
     
     // Create a new scene
     SCNScene *scene = [[SCNScene alloc] init];
-    self.sceneView.debugOptions = ARSCNDebugOptionShowWorldOrigin | ARSCNDebugOptionShowFeaturePoints;
+//    self.sceneView.debugOptions = ARSCNDebugOptionShowWorldOrigin | ARSCNDebugOptionShowFeaturePoints;
 
     self.sceneView.scene = scene;
 
@@ -280,6 +282,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self.visualsDelegate renderer:renderer willRenderScene:scene atTime:time];
 }
 
+- (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame;
+{
+    [self.visualsDelegate session:session didUpdateFrame:frame];
+}
 
 #pragma mark - Touches
 /**
